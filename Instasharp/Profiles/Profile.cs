@@ -16,6 +16,11 @@
         public string Handle { get; }
 
         /// <summary>
+        /// Is the account verified.
+        /// </summary>
+        public bool IsVerified { get; }
+
+        /// <summary>
         /// The number of posts on the account.
         /// </summary>
         public double PostCount { get; }
@@ -56,11 +61,17 @@
         public string? Website { get; }
 
         /// <summary>
+        /// Is the account private.
+        /// </summary>
+        public bool IsPrivate { get; }
+
+        /// <summary>
         /// Initializes a new instance of <see cref="Profile"/>.
         /// </summary>
         public Profile(
             string profilePictureUri,
             string handle,
+            bool isVerified,
             double postCount,
             double followerCount,
             double followingCount,
@@ -68,10 +79,12 @@
             bool isBusinessAccount,
             string? businessCategoryName,
             string? bio,
-            string? website)
+            string? website,
+            bool isPrivate)
         {
             ProfilePictureUri = profilePictureUri;
             Handle = handle;
+            IsVerified = isVerified;
             PostCount = postCount;
             FollowerCount = followerCount;
             FollowingCount = followingCount;
@@ -80,12 +93,14 @@
             BusinessCategoryName = businessCategoryName;
             Bio = bio;
             Website = website;
+            IsPrivate = isPrivate;
         }
 
         public override string ToString()
         {
             return $@"Profile Picture Uri: {this.ProfilePictureUri}
 Handle: {this.Handle}
+Is Verified: {this.IsVerified}
 Post Count: {this.PostCount}
 Follower Count: {this.FollowerCount}
 Following Count: {this.FollowingCount}
@@ -93,7 +108,8 @@ Full Name: {this.FullName}
 Is Business Account: {this.IsBusinessAccount}
 Business Account Type: {this.BusinessCategoryName}
 Bio: {this.Bio}
-Website: {this.Website}";
+Website: {this.Website}
+Is Private: {this.IsPrivate}";
         }
     }
 }
