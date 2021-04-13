@@ -111,7 +111,7 @@ namespace Instasharp.Net
 
         public async Task DownloadProfilePictureAsync(Profile profile, string path)
         {
-            var response = await _httpClient.GetAsync(profile.ProfilePictureUri).ConfigureAwait(false);
+            using var response = await _httpClient.GetAsync(profile.ProfilePictureUri).ConfigureAwait(false);
             using var stream = new FileStream(path, FileMode.Create);
             await response.Content.CopyToAsync(stream).ConfigureAwait(false);
         }
