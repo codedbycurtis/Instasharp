@@ -6,7 +6,7 @@ namespace Instasharp.Exceptions
     /// Thrown if the content of an Instagram account cannot be obtained.
     /// </summary>
     [Serializable]
-    public partial class ContentUnavailableException : Exception
+    public partial class ContentUnavailableException : InstasharpException
     {
         /// <summary>
         /// The username/URL of the account whose content cannot be retrieved.
@@ -14,17 +14,10 @@ namespace Instasharp.Exceptions
         public string? UsernameOrUrl { get; }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ContentUnavailableException"/> with the specified <paramref name="message"/> and <paramref name="usernameOrUrl"/>.
+        /// Initializes a new instance of <see cref="ContentUnavailableException"/> with the specified <paramref name="message"/>
+        /// and <paramref name="usernameOrUrl"/>.
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="usernameOrUrl"></param>
         public ContentUnavailableException(string message, string usernameOrUrl) : base(message) { UsernameOrUrl = usernameOrUrl; }
-        public ContentUnavailableException() { }
-        public ContentUnavailableException(string message) : base(message) { }
-        public ContentUnavailableException(string message, Exception inner) : base(message, inner) { }
-        protected ContentUnavailableException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
 
     public partial class ContentUnavailableException
@@ -34,6 +27,7 @@ namespace Instasharp.Exceptions
             var message = $@"The content of the Instagram account '{usernameOrUrl}' could not be obtained.
 This may be due to the user having blocked the account associated with the specified SessionID.
 Alternatively, the account may have existed at one point, but has since been banned or deleted.
+Additionally, if a URL is being used, ensure the path is that of an Instagram account.
 If none of these theories are true, feel free to report this issue on the project's Github page.";
 
             return new ContentUnavailableException(message, usernameOrUrl);

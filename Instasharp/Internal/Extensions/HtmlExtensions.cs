@@ -5,14 +5,9 @@
         internal static string? Parse(this string source, string tag, string separator)
         {
             var indexOf = source.IndexOf(tag);
-
-            if (indexOf is -1)
-            {
-                return null;
-            }
-
             var startIndex = indexOf + tag.Length;
-            return source[startIndex..source.IndexOf(separator, startIndex)];
+
+            return indexOf is -1 ? null : source[startIndex..source.IndexOf(separator, startIndex)];
         }
     }
 }

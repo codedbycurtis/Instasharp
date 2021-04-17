@@ -2,30 +2,35 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using Instasharp.Profiles;
 using Instasharp.Internal.Extensions;
 using Instasharp.Exceptions;
+using Instasharp.Search;
 
-namespace Instasharp.Net
+namespace Instasharp
 {
     /// <summary>
     /// Serves as an interface between Instagram's website and client applications.
     /// </summary>
-    public class InstagramWebClient
+    public class InstagramClient
     {
         private readonly HttpClient _httpClient = new();
 
         /// <summary>
-        /// Initializes a new instance of <see cref="InstagramWebClient"/>.
+        /// Initializes a new instance of <see cref="InstagramClient"/>.
         /// </summary>
-        public InstagramWebClient() { }
+        public InstagramClient()
+        {
+        }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="InstagramWebClient"/> with the specified <paramref name="sessionId"/>.
+        /// Initializes a new instance of <see cref="InstagramClient"/> with the specified <paramref name="sessionId"/>.
         /// </summary>
         /// <param name="sessionId">A valid SessionID may be required to stop Instagram re-directing requests to the login page.</param>
-        public InstagramWebClient(string sessionId)
+        public InstagramClient(string sessionId)
         {
             // Without an authorized 'sessionid,' Instagram may re-direct requests to the login page.
             _httpClient.DefaultRequestHeaders.Add("cookie", $"sessionid={sessionId}");
@@ -33,8 +38,8 @@ namespace Instasharp.Net
 
         /// <summary>
         /// Scrapes metadata from the Instagram profile with the specified <paramref name="usernameOrUrl"/>.
-        /// <para>URLs must begin with 'https://'.</para>
         /// </summary>
+        /// <remarks>URLs must begin with 'http://' or 'https://'.</remarks>
         /// <param name="usernameOrUrl">The username (handle) of the user, or the link to the user's profile.</param>
         /// <returns>A <see cref="Profile"/> object representing the acquired metadata.</returns>
         public async Task<Profile> GetProfileMetadataAsync(string usernameOrUrl)
@@ -43,17 +48,16 @@ namespace Instasharp.Net
 
             if (usernameOrUrl.StartsWith(StringComparison.OrdinalIgnoreCase, "https://www.instagram.com/", "http://www.instagram.com/"))
             {
-                response = await _httpClient.GetAsync(usernameOrUrl).ConfigureAwait(false);
+                response = await _httpClient.GetAsync(usernameOrUrl);
             }
 
             else
             {
-                response = await _httpClient.GetAsync($"http://www.instagram.com/{usernameOrUrl}/").ConfigureAwait(false);
+                response = await _httpClient.GetAsync($"https://www.instagram.com/{usernameOrUrl}/");
             }
             
             var html = await response.Content.ReadAsStringAsync();
 
-            // HttpResponseMessage is not used after this point, so we can release its resources here
             response.Dispose();
 
             var json = html.Parse("<script type=\"text/javascript\">window._sharedData = ", ";</script>");
@@ -70,7 +74,7 @@ namespace Instasharp.Net
             // If a 'LoginAndSignupPage' token exists, Instagram has re-directed our request, so an exception is thrown
             if (jObject["entry_data"]["LoginAndSignupPage"] is not null)
             {
-                throw ClientUnauthorizedException.SessionIDRequired();
+                throw ClientUnauthorizedException.SessionIDRequiredOrInvalid();
             }
 
             // If a 'ProfilePage' token cannot be found, the username is invalid, so an exception is thrown
@@ -109,11 +113,48 @@ namespace Instasharp.Net
                 isPrivate);
         }
 
+        /// <summary>
+        /// Downloads the high-definition profile picture of the specified <paramref name="profile"/> to the specified <paramref name="path"/>.
+        /// </summary>
+        /// <param name="profile">The profile which will have it's profile picture downloaded.</param>
+        /// <param name="path">The profile picture's download location. (Must include a file name and extension.)</param>
         public async Task DownloadProfilePictureAsync(Profile profile, string path)
         {
-            using var response = await _httpClient.GetAsync(profile.ProfilePictureUri).ConfigureAwait(false);
+            using var response = await _httpClient.GetAsync(profile.ProfilePictureUri);
             using var stream = new FileStream(path, FileMode.Create);
-            await response.Content.CopyToAsync(stream).ConfigureAwait(false);
+            await response.Content.CopyToAsync(stream);
+        }
+
+        /// <summary>
+        /// Enumerates over Instagram profiles matching the specified <paramref name="searchQuery"/>.
+        /// </summary>
+        /// <param name="searchQuery">The profile to search for.</param>
+        public async IAsyncEnumerable<SearchResult> SearchAsync(string searchQuery)
+        {
+            using var response = await _httpClient.GetAsync($"https://www.instagram.com/web/search/topsearch/?query={searchQuery}/");
+            var json = await response.Content.ReadAsStringAsync();
+            var jObject = JObject.Parse(json);
+
+#nullable disable
+
+            for (int i = 0; i < jObject["users"].Count(); ++i)
+            {
+                var profilePictureUri = jObject["users"][i]["user"]["profile_pic_url"].ToString();
+                var handle = jObject["users"][i]["user"]["username"].ToString();
+                var isVerified = jObject["users"][i]["user"]["is_verified"].ToObject<bool>();
+                var fullName = jObject["users"][i]["user"]["full_name"].ToString();
+                var isPrivate = jObject["users"][i]["user"]["is_private"].ToObject<bool>();
+
+                yield return new SearchResult(
+                    profilePictureUri,
+                    handle,
+                    isVerified,
+                    fullName,
+                    isPrivate);
+            }
+
+#nullable restore
+
         }
     }
 }

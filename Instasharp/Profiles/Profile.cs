@@ -96,6 +96,7 @@
             IsPrivate = isPrivate;
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return $@"Profile Picture Uri: {this.ProfilePictureUri}
