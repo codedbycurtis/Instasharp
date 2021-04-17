@@ -1,8 +1,8 @@
 ﻿namespace Instasharp.Search
 {
-	/// <summary>
-	/// Profile metadata returned from searches.
-	/// </summary>
+    /// <summary>
+    /// Profile metadata returned from searches.
+    /// </summary>
     public class SearchResult
     {
         /// <summary>
