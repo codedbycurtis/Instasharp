@@ -3,7 +3,7 @@
 namespace Instasharp.Exceptions
 {
     /// <summary>
-    /// Thrown when the <see cref="InstagramClient"/> fails to retrieve the requested metadata due to lacking authorization.
+    /// Thrown when the <see cref="InstagramClient"/> is unauthorized and cannot retrieve the requested metadata.
     /// </summary>
     [Serializable]
     public partial class ClientUnauthorizedException : InstasharpException
@@ -16,10 +16,10 @@ namespace Instasharp.Exceptions
 
     public partial class ClientUnauthorizedException
     {
-        public static ClientUnauthorizedException SessionIDRequiredOrInvalid()
+        public static ClientUnauthorizedException InvalidSessionId()
         {
-            var message = $@"Metadata retrieval failed; this is likely due to an unauthorized InstagramClient.
-Try using a valid SessionID, if you are not.
+            var message = $@"Metadata retrieval failed - this is likely due to an unauthorized client.
+Try using a valid Session ID.
 If this does not work, and the issue persists, report it on the project's Github page.";
 
             return new ClientUnauthorizedException(message);

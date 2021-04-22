@@ -13,24 +13,17 @@ using Instasharp.Search;
 namespace Instasharp
 {
     /// <summary>
-    /// Serves as an interface between Instagram's website and client applications.
+    /// Provides a gateway to scraping various metadata from Instagram profiles.
     /// </summary>
-    public class InstagramClient
+    public sealed class InstagramClient
     {
         private readonly HttpClient _httpClient = new();
 
         /// <summary>
-        /// Initializes a new instance of <see cref="InstagramClient"/>.
-        /// </summary>
-        public InstagramClient()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="InstagramClient"/> with the specified <paramref name="sessionId"/>.
+        /// Initializes a new instance of <see cref="InstagramClient"/> with an optional <paramref name="sessionId"/>.
         /// </summary>
         /// <param name="sessionId">A valid SessionID may be required to stop Instagram re-directing requests to the login page.</param>
-        public InstagramClient(string sessionId)
+        public InstagramClient(string? sessionId = default)
         {
             // Without an authorized 'sessionid,' Instagram may re-direct requests to the login page.
             _httpClient.DefaultRequestHeaders.Add("cookie", $"sessionid={sessionId}");
@@ -42,7 +35,7 @@ namespace Instasharp
         /// <remarks>URLs must begin with 'http://' or 'https://'.</remarks>
         /// <param name="usernameOrUrl">The username (handle) of the user, or the link to the user's profile.</param>
         /// <returns>A <see cref="Profile"/> object representing the acquired metadata.</returns>
-        public async Task<Profile> GetProfileMetadataAsync(string usernameOrUrl)
+        public async ValueTask<Profile> GetProfileMetadataAsync(string usernameOrUrl)
         {
             HttpResponseMessage response;
 
@@ -64,7 +57,7 @@ namespace Instasharp
 
             if (json is null)
             {
-                throw ContentUnavailableException.Unavailable(usernameOrUrl);
+                throw ContentUnavailableException.PageUnavailable(usernameOrUrl);
             }
 
             var jObject = JObject.Parse(json);
@@ -74,7 +67,7 @@ namespace Instasharp
             // If a 'LoginAndSignupPage' token exists, Instagram has re-directed our request, so an exception is thrown
             if (jObject["entry_data"]["LoginAndSignupPage"] is not null)
             {
-                throw ClientUnauthorizedException.SessionIDRequiredOrInvalid();
+                throw ClientUnauthorizedException.InvalidSessionId();
             }
 
             // If a 'ProfilePage' token cannot be found, the username is invalid, so an exception is thrown
@@ -129,7 +122,7 @@ namespace Instasharp
         /// Enumerates over Instagram profiles matching the specified <paramref name="searchQuery"/>.
         /// </summary>
         /// <param name="searchQuery">The profile to search for.</param>
-        public async IAsyncEnumerable<SearchResult> SearchAsync(string searchQuery)
+        public async IAsyncEnumerable<ProfileSearchResult> GetProfilesAsync(string searchQuery)
         {
             using var response = await _httpClient.GetAsync($"https://www.instagram.com/web/search/topsearch/?query={searchQuery}/");
             var json = await response.Content.ReadAsStringAsync();
@@ -145,7 +138,7 @@ namespace Instasharp
                 var fullName = jObject["users"][i]["user"]["full_name"].ToString();
                 var isPrivate = jObject["users"][i]["user"]["is_private"].ToObject<bool>();
 
-                yield return new SearchResult(
+                yield return new ProfileSearchResult(
                     profilePictureUri,
                     handle,
                     isVerified,

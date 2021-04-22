@@ -1,9 +1,13 @@
-﻿namespace Instasharp.Search
+﻿using System.Threading.Tasks;
+using System.Collections.Generic;
+using Instasharp.Internal.Extensions;
+
+namespace Instasharp.Search
 {
     /// <summary>
     /// Profile metadata returned from searches.
     /// </summary>
-    public class SearchResult
+    public partial class ProfileSearchResult
     {
         /// <summary>
         /// The URI to an Instagram account's profile picture.
@@ -26,14 +30,14 @@
         public string? FullName { get; }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="Profile"/>.
+        /// Is the account private.
         /// </summary>
         public bool IsPrivate { get; }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="SearchResult"/>.
+        /// Initializes a new instance of <see cref="ProfileSearchResult"/>.
         /// </summary>
-        public SearchResult(
+        public ProfileSearchResult(
             string profilePictureUri,
             string handle,
             bool isVerified,
@@ -56,5 +60,18 @@ Is Verified: {this.IsVerified}
 Full Name: {this.FullName}
 Is Private: {this.IsPrivate}";
         }
+    }
+
+    /// <summary>
+    /// Useful methods for <see cref="ProfileSearchResult"/> collections.
+    /// </summary>
+    public static class CollectionExtensions
+    {
+        /// <summary>
+        /// Enumerates through the contents of an <see cref="IAsyncEnumerable{T}"/> and collates them into an <see cref="IReadOnlyList{T}"/>.
+        /// </summary>
+        /// <returns>An <see cref="IReadOnlyList{T}"/> of <see cref="ProfileSearchResult"/>.</returns>
+        public static async ValueTask<IReadOnlyList<T>> CollateAsync<T>(
+            this IAsyncEnumerable<T> source) where T : ProfileSearchResult => await source.ToListAsync();
     }
 }

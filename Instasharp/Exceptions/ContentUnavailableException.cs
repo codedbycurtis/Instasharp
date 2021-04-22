@@ -22,13 +22,13 @@ namespace Instasharp.Exceptions
 
     public partial class ContentUnavailableException
     {
-        public static ContentUnavailableException Unavailable(string usernameOrUrl)
+        public static ContentUnavailableException PageUnavailable(string usernameOrUrl)
         {
             var message = $@"The content of the Instagram account '{usernameOrUrl}' could not be obtained.
-This may be due to the user having blocked the account associated with the specified SessionID.
+This may be due to the user having blocked the account associated with the specified Session ID.
 Alternatively, the account may have existed at one point, but has since been banned or deleted.
 Additionally, if a URL is being used, ensure the path is that of an Instagram account.
-If none of these theories are true, feel free to report this issue on the project's Github page.";
+If the issue persists, feel free to report this issue on the project's Github page.";
 
             return new ContentUnavailableException(message, usernameOrUrl);
         }

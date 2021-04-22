@@ -8,8 +8,6 @@ namespace Instasharp.Exceptions
     [Serializable]
     public abstract class InstasharpException : Exception
     {
-        protected InstasharpException(string message) : base(message)
-        {
-        }
+        protected InstasharpException(string message) : base(message) { }
     }
 }
