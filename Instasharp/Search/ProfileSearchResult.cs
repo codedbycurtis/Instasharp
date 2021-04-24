@@ -7,7 +7,7 @@ namespace Instasharp.Search
     /// <summary>
     /// Profile metadata returned from searches.
     /// </summary>
-    public partial class ProfileSearchResult
+    public class ProfileSearchResult
     {
         /// <summary>
         /// The URI to an Instagram account's profile picture.
@@ -71,7 +71,7 @@ Is Private: {this.IsPrivate}";
         /// Enumerates through the contents of an <see cref="IAsyncEnumerable{T}"/> and collates them into an <see cref="IReadOnlyList{T}"/>.
         /// </summary>
         /// <returns>An <see cref="IReadOnlyList{T}"/> of <see cref="ProfileSearchResult"/>.</returns>
-        public static async ValueTask<IReadOnlyList<T>> CollateAsync<T>(
+        public static async Task<IReadOnlyList<T>> CollateAsync<T>(
             this IAsyncEnumerable<T> source) where T : ProfileSearchResult => await source.ToListAsync();
     }
 }

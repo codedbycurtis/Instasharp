@@ -35,7 +35,7 @@ namespace Instasharp
         /// <remarks>URLs must begin with 'http://' or 'https://'.</remarks>
         /// <param name="usernameOrUrl">The username (handle) of the user, or the link to the user's profile.</param>
         /// <returns>A <see cref="Profile"/> object representing the acquired metadata.</returns>
-        public async ValueTask<Profile> GetProfileMetadataAsync(string usernameOrUrl)
+        public async Task<Profile> GetProfileMetadataAsync(string usernameOrUrl)
         {
             HttpResponseMessage response;
 
