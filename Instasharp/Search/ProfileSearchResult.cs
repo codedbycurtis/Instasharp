@@ -73,5 +73,13 @@ Is Private: {this.IsPrivate}";
         /// <returns>An <see cref="IReadOnlyList{T}"/> of <see cref="ProfileSearchResult"/>.</returns>
         public static async Task<IReadOnlyList<T>> CollateAsync<T>(
             this IAsyncEnumerable<T> source) where T : ProfileSearchResult => await source.ToListAsync();
+
+        /// <summary>
+        /// Enumerates through the contents of an <see cref="IAsyncEnumerable{T}"/> and collates <paramref name="count"/> results into an <see cref="IReadOnlyList{T}"/>.
+        /// </summary>
+        /// <param name="count">The number of search results to return.</param>
+        /// <returns>An <see cref="IReadOnlyList{T}"/> of <see cref="ProfileSearchResult"/>.</returns>
+        public static async Task<IReadOnlyList<T>> CollateAsync<T>(
+            this IAsyncEnumerable<T> source, int count) where T : ProfileSearchResult => await source.ToListAsync(count);
     }
 }

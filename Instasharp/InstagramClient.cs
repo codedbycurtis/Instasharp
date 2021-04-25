@@ -122,7 +122,7 @@ namespace Instasharp
         /// Enumerates over Instagram profiles matching the specified <paramref name="searchQuery"/>.
         /// </summary>
         /// <param name="searchQuery">The profile to search for.</param>
-        public async IAsyncEnumerable<ProfileSearchResult> GetProfilesAsync(string searchQuery)
+        public async IAsyncEnumerable<ProfileSearchResult> SearchForProfilesAsync(string searchQuery)
         {
             using var response = await _httpClient.GetAsync($"https://www.instagram.com/web/search/topsearch/?query={searchQuery}/");
             var json = await response.Content.ReadAsStringAsync();

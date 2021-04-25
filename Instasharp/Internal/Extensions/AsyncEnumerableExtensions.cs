@@ -14,5 +14,22 @@ namespace Instasharp.Internal.Extensions
             }
             return collection;
         }
+
+        internal static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> source, int count)
+        {
+            var collection = new List<T>();
+            await foreach (var item in source)
+            {
+                if (collection.Count != count)
+                {
+                    collection.Add(item);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return collection;
+        }
     }
 }
