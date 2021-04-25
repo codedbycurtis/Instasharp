@@ -5,6 +5,7 @@ The scraper works regardless of authentication, therefore, a username or passwor
 
 ## Features
 Instasharp can:
+- Search for profiles matching a specified username
 - Acquire metadata from a user's profile
 - Download a user's profile picture in high-definition
 - Work without authentication
