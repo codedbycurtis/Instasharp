@@ -7,7 +7,7 @@ namespace Instasharp.Search
     /// <summary>
     /// Profile metadata returned from searches.
     /// </summary>
-    public class ProfileSearchResult
+    public partial class ProfileSearchResult
     {
         /// <summary>
         /// The URI to an Instagram account's profile picture.
@@ -68,18 +68,18 @@ Is Private: {this.IsPrivate}";
     public static class CollectionExtensions
     {
         /// <summary>
-        /// Enumerates through the contents of an <see cref="IAsyncEnumerable{T}"/> and collates them into an <see cref="IReadOnlyList{T}"/>.
+        /// Enumerates through the contents of an <see cref="IAsyncEnumerable{T}"/> and collects them into an <see cref="IReadOnlyList{T}"/>.
         /// </summary>
         /// <returns>An <see cref="IReadOnlyList{T}"/> of <see cref="ProfileSearchResult"/>.</returns>
-        public static async Task<IReadOnlyList<T>> CollateAsync<T>(
+        public static async Task<IReadOnlyList<T>> CollectAsync<T>(
             this IAsyncEnumerable<T> source) where T : ProfileSearchResult => await source.ToListAsync();
 
         /// <summary>
-        /// Enumerates through the contents of an <see cref="IAsyncEnumerable{T}"/> and collates <paramref name="count"/> results into an <see cref="IReadOnlyList{T}"/>.
+        /// Enumerates through the contents of an <see cref="IAsyncEnumerable{T}"/> and collects the first <paramref name="count"/> number of results into an <see cref="IReadOnlyList{T}"/>.
         /// </summary>
         /// <param name="count">The number of search results to return.</param>
         /// <returns>An <see cref="IReadOnlyList{T}"/> of <see cref="ProfileSearchResult"/>.</returns>
-        public static async Task<IReadOnlyList<T>> CollateAsync<T>(
+        public static async Task<IReadOnlyList<T>> CollectAsync<T>(
             this IAsyncEnumerable<T> source, int count) where T : ProfileSearchResult => await source.ToListAsync(count);
     }
 }

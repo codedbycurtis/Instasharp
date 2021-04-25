@@ -25,7 +25,6 @@ namespace Instasharp
         /// <param name="sessionId">A valid SessionID may be required to stop Instagram re-directing requests to the login page.</param>
         public InstagramClient(string? sessionId = default)
         {
-            // Without an authorized 'sessionid,' Instagram may re-direct requests to the login page.
             _httpClient.DefaultRequestHeaders.Add("cookie", $"sessionid={sessionId}");
         }
 
@@ -39,6 +38,7 @@ namespace Instasharp
         {
             HttpResponseMessage response;
 
+            // Check if the user has entered a complete URL or a username
             if (usernameOrUrl.StartsWith(StringComparison.OrdinalIgnoreCase, "https://www.instagram.com/", "http://www.instagram.com/"))
             {
                 response = await _httpClient.GetAsync(usernameOrUrl);
@@ -53,8 +53,11 @@ namespace Instasharp
 
             response.Dispose();
 
-            var json = html.Parse("<script type=\"text/javascript\">window._sharedData = ", ";</script>");
+            // Splits the content between the specified tags into a substring - which is the JSON data we need
+            // (Most of this JSON data is useless, so there may be room for optimization here to decrease parsing time)
+            var json = html.SubstringBetween("<script type=\"text/javascript\">window._sharedData = ", ";</script>");
 
+            // If appropriate JSON data cannot be found, the page we are trying to access must be unavailable, so an exception is thrown
             if (json is null)
             {
                 throw ContentUnavailableException.PageUnavailable(usernameOrUrl);
