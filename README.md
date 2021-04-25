@@ -17,18 +17,32 @@ Currently, Instasharp targets **.NET Core 5.0**, however, implementation for ear
 - [Json.NET](https://github.com/JamesNK/Newtonsoft.Json)
 
 ### Examples
-#### Obtaining profile metadata
+#### Obtaining a specific profile's metadata
 Here is a short example of how to obtain metadata from an Instagram user's profile:
 
 ```C#
+using Instasharp;
+
 // SessionID is an optional parameter that may be required
 // to ensure Instagram does not re-direct requests to the
 // login page
 var sessionId = "0123456789ABC&%!";
-var client = new InstagramWebClient(sessionId);
+var client = new InstagramClient(sessionId);
 var username = "hey_its_curtis";
 
 // The URL of the user's profile may also be used here instead
 // of the username
 var profile = await client.GetProfileMetadataAsync(username);
+```
+
+#### Searching for profiles matching a specified username
+```C#
+using Instasharp;
+using Instasharp.Search;
+
+var sessionId = "0123456789ABC&%!";
+var client = new InstagramClient(sessionId);
+var username = "hey_its_curtis";
+
+var results = await client.SearchForProfilesAsync(username).CollateAsync();
 ```
