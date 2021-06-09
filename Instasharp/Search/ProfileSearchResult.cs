@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Collections.Generic;
+using Instasharp.Profiles;
 using Instasharp.Internal.Extensions;
 
 namespace Instasharp.Search
@@ -7,31 +8,21 @@ namespace Instasharp.Search
     /// <summary>
     /// Profile metadata returned from searches.
     /// </summary>
-    public partial class ProfileSearchResult
+    public class ProfileSearchResult : IProfile
     {
-        /// <summary>
-        /// The URI to an Instagram account's profile picture.
-        /// </summary>
+        ///<inheritdoc />
         public string ProfilePictureUri { get; }
 
-        /// <summary>
-        /// The Instagram account's handle (username).
-        /// </summary>
+        ///<inheritdoc />
         public string Handle { get; }
 
-        /// <summary>
-        /// Is the account verified.
-        /// </summary>
+        ///<inheritdoc />
         public bool IsVerified { get; }
 
-        /// <summary>
-        /// The user's full name as displayed on their profile.
-        /// </summary>
+        ///<inheritdoc />
         public string? FullName { get; }
 
-        /// <summary>
-        /// Is the account private.
-        /// </summary>
+        ///<inheritdoc />
         public bool IsPrivate { get; }
 
         /// <summary>

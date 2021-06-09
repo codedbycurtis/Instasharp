@@ -3,6 +3,14 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>Scrapes metadata from public or private Instagram profiles.</Description>
+    <Company>Curtis Caulfield</Company>
+    <Authors>Curtis Caulfield</Authors>
+    <Copyright>© Curtis Caulfield 2021</Copyright>
+    <PackageProjectUrl>https://www.github.com/codedbycurtis/Instasharp</PackageProjectUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageId>codedbycurtis-Instasharp</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

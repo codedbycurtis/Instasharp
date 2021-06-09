@@ -15,7 +15,7 @@ namespace Instasharp
     /// <summary>
     /// Provides a gateway to scraping various metadata from Instagram profiles.
     /// </summary>
-    public sealed class InstagramClient
+    public class InstagramClient
     {
         private readonly HttpClient _httpClient = new();
 
@@ -36,6 +36,7 @@ namespace Instasharp
         /// <returns>A <see cref="Profile"/> object representing the acquired metadata.</returns>
         public async Task<Profile> GetProfileMetadataAsync(string usernameOrUrl)
         {
+            // Declare contextual variables
             HttpResponseMessage response;
 
             // Check if the user has entered a complete URL or a username
@@ -43,15 +44,14 @@ namespace Instasharp
             {
                 response = await _httpClient.GetAsync(usernameOrUrl);
             }
-
             else
             {
                 response = await _httpClient.GetAsync($"https://www.instagram.com/{usernameOrUrl}/");
             }
-            
+
             var html = await response.Content.ReadAsStringAsync();
 
-            response.Dispose();
+            response.Dispose();            
 
             // Splits the content between the specified tags into a substring - which is the JSON data we need
             // (Most of this JSON data is useless, so there may be room for optimization here to decrease parsing time)
@@ -79,18 +79,19 @@ namespace Instasharp
                 throw ProfileNotFoundException.InvalidUsernameOrUrl(usernameOrUrl);
             }
 
-            var profilePictureUri = jObject["entry_data"]["ProfilePage"][0]["graphql"]["user"]["profile_pic_url_hd"].ToString();
-            var handle = jObject["entry_data"]["ProfilePage"][0]["graphql"]["user"]["username"].ToString();
-            var isVerified = jObject["entry_data"]["ProfilePage"][0]["graphql"]["user"]["is_verified"].ToObject<bool>();
-            var fullName = jObject["entry_data"]["ProfilePage"][0]["graphql"]["user"]["full_name"].ToString();
-            var postCount = jObject["entry_data"]["ProfilePage"][0]["graphql"]["user"]["edge_owner_to_timeline_media"]["count"].ToObject<double>();
-            var followerCount = jObject["entry_data"]["ProfilePage"][0]["graphql"]["user"]["edge_followed_by"]["count"].ToObject<double>();
-            var followingCount = jObject["entry_data"]["ProfilePage"][0]["graphql"]["user"]["edge_follow"]["count"].ToObject<double>();
-            var isBusinessAccount = jObject["entry_data"]["ProfilePage"][0]["graphql"]["user"]["is_business_account"].ToObject<bool>();
-            var businessCategoryName = jObject["entry_data"]["ProfilePage"][0]["graphql"]["user"]["category_name"].ToString();
-            var bio = jObject["entry_data"]["ProfilePage"][0]["graphql"]["user"]["biography"].ToString();
-            var website = jObject["entry_data"]["ProfilePage"][0]["graphql"]["user"]["external_url"].ToString();
-            var isPrivate = jObject["entry_data"]["ProfilePage"][0]["graphql"]["user"]["is_private"].ToObject<bool>();
+            var parsedProfile = jObject["entry_data"]["ProfilePage"][0]["graphql"]["user"];
+            var profilePictureUri = parsedProfile["profile_pic_url_hd"].ToString();
+            var handle = parsedProfile["username"].ToString();
+            var isVerified = parsedProfile["is_verified"].ToObject<bool>();
+            var fullName = parsedProfile["full_name"].ToString();
+            var postCount = parsedProfile["edge_owner_to_timeline_media"]["count"].ToObject<double>();
+            var followerCount = parsedProfile["edge_followed_by"]["count"].ToObject<double>();
+            var followingCount = parsedProfile["edge_follow"]["count"].ToObject<double>();
+            var isBusinessAccount = parsedProfile["is_business_account"].ToObject<bool>();
+            var businessCategoryName = parsedProfile["category_name"].ToString();
+            var bio = parsedProfile["biography"].ToString();
+            var website = parsedProfile["external_url"].ToString();
+            var isPrivate = parsedProfile["is_private"].ToObject<bool>();
 
 #nullable restore
 
@@ -116,9 +117,22 @@ namespace Instasharp
         /// <param name="path">The profile picture's download location. (Must include a file name and extension.)</param>
         public async Task DownloadProfilePictureAsync(Profile profile, string path)
         {
-            using var response = await _httpClient.GetAsync(profile.ProfilePictureUri);
+            using var response = await this._httpClient.GetAsync(profile.ProfilePictureUri);
             using var stream = new FileStream(path, FileMode.Create);
             await response.Content.CopyToAsync(stream);
+        }
+
+        /// <summary>
+        /// Downloads the high-definition profile picture of the profile with the specified <paramref name="usernameOrUrl"/> to the specified <paramref name="path"/>.
+        /// </summary>
+        /// <param name="usernameOrUrl">The username or URL of the profile which will have it's profile picture downloaded.</param>
+        /// <param name="path">The profile picture's download location. (Must include a file name and extension.)</param>
+        public async Task DownloadProfilePictureAsync(string usernameOrUrl, string path)
+        {
+            var profile = await this.GetProfileMetadataAsync(usernameOrUrl);
+            using var profilePictureResponse = await _httpClient.GetAsync(profile.ProfilePictureUri);
+            using var stream = new FileStream(path, FileMode.Create);
+            await profilePictureResponse.Content.CopyToAsync(stream);
         }
 
         /// <summary>
@@ -127,7 +141,7 @@ namespace Instasharp
         /// <param name="searchQuery">The profile to search for.</param>
         public async IAsyncEnumerable<ProfileSearchResult> SearchForProfilesAsync(string searchQuery)
         {
-            using var response = await _httpClient.GetAsync($"https://www.instagram.com/web/search/topsearch/?query={searchQuery}/");
+            using var response = await this._httpClient.GetAsync($"https://www.instagram.com/web/search/topsearch/?query={searchQuery}/");
             var json = await response.Content.ReadAsStringAsync();
             var jObject = JObject.Parse(json);
 

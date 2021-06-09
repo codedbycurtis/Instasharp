@@ -3,21 +3,15 @@
     /// <summary>
     /// Publicly-available metadata of an Instagram profile.
     /// </summary>
-    public class Profile
+    public class Profile : IProfile
     {
-        /// <summary>
-        /// The URI to an Instagram account's profile picture.
-        /// </summary>
+        ///<inheritdoc />
         public string ProfilePictureUri { get; }
 
-        /// <summary>
-        /// The Instagram account's handle (username).
-        /// </summary>
+        ///<inheritdoc />
         public string Handle { get; }
 
-        /// <summary>
-        /// Is the account verified.
-        /// </summary>
+        ///<inheritdoc />
         public bool IsVerified { get; }
 
         /// <summary>
@@ -35,9 +29,7 @@
         /// </summary>
         public double FollowingCount { get; }
 
-        /// <summary>
-        /// The user's full name as displayed on their profile.
-        /// </summary>
+        ///<inheritdoc />
         public string? FullName { get; }
 
         /// <summary>
@@ -60,9 +52,7 @@
         /// </summary>
         public string? Website { get; }
 
-        /// <summary>
-        /// Is the account private.
-        /// </summary>
+        ///<inheritdoc />
         public bool IsPrivate { get; }
 
         /// <summary>
@@ -82,18 +72,18 @@
             string? website,
             bool isPrivate)
         {
-            ProfilePictureUri = profilePictureUri;
-            Handle = handle;
-            IsVerified = isVerified;
-            PostCount = postCount;
-            FollowerCount = followerCount;
-            FollowingCount = followingCount;
-            FullName = fullName;
-            IsBusinessAccount = isBusinessAccount;
-            BusinessCategoryName = businessCategoryName;
-            Bio = bio;
-            Website = website;
-            IsPrivate = isPrivate;
+            this.ProfilePictureUri = profilePictureUri;
+            this.Handle = handle;
+            this.IsVerified = isVerified;
+            this.PostCount = postCount;
+            this.FollowerCount = followerCount;
+            this.FollowingCount = followingCount;
+            this.FullName = fullName;
+            this.IsBusinessAccount = isBusinessAccount;
+            this.BusinessCategoryName = businessCategoryName;
+            this.Bio = bio;
+            this.Website = website;
+            this.IsPrivate = isPrivate;
         }
 
         /// <inheritdoc />
