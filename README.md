@@ -3,6 +3,8 @@ Instasharp is an open-source web-scraping API for .NET — used to obtain a wide
 
 The scraper works regardless of authentication, therefore, a username or password is **not required.**
 
+> This API is used in another project: [Instaview](https://www.github.com/codedbycurtis/Instaview) — the only Instagram profile viewer you need.
+
 ## Features
 Instasharp can:
 - Search for profiles matching a specified username
