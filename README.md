@@ -1,4 +1,6 @@
 # Instasharp
+[![NuGet](https://img.shields.io/nuget/v/codedbycurtis-Instasharp?style=flat-square)](https://www.nuget.org/packages/codedbycurtis-Instasharp/)
+
 Instasharp is an open-source web-scraping API for .NET — used to obtain a wide range of metadata from Instagram profiles.
 
 The scraper works regardless of authentication, therefore, a username or password is **not required.**
@@ -12,12 +14,20 @@ Instasharp can:
 - Download a user's profile picture in high-definition
 - Work without authentication
 
+## Installation
+- Download it from **NuGet**, [here](https://www.nuget.org/packages/codedbycurtis-Instasharp/)...
+- ...or add it via the **.NET CLI** using `dotnet add package codedbycurtis-Instasharp`
+
 ## Usage
-### Runtime
-Currently, Instasharp targets **.NET Core 5.0**, however, implementation for earlier versions, as well as **.NET Framework** is planned.
+### Supported Runtimes
+- .NET Core 5.0
+- .NET Core 3.1
+- .NET Framework >= 4.6.1
+- .NET Standard >= 2.0
 
 ### Dependencies
 - [Json.NET](https://github.com/JamesNK/Newtonsoft.Json)
+- (Depending on the target framework, other dependencies may be required.)
 
 ### Examples
 #### Obtaining a specific profile's metadata
