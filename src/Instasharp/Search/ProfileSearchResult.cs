@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System.Collections.Generic;
 using Instasharp.Profiles;
-using Instasharp.Internal.Extensions;
+using Instasharp.Utils.Extensions;
 
 namespace Instasharp.Search
 {
@@ -56,7 +56,7 @@ Is Private: {this.IsPrivate}";
     /// <summary>
     /// Useful methods for <see cref="ProfileSearchResult"/> collections.
     /// </summary>
-    public static class CollectionExtensions
+    public static class ProfileSearchResultExtensions
     {
         /// <summary>
         /// Enumerates through the contents of an <see cref="IAsyncEnumerable{T}"/> and collects them into an <see cref="IReadOnlyList{T}"/>.

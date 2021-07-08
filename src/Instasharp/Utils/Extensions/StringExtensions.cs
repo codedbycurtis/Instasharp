@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Instasharp.Internal.Extensions
+namespace Instasharp.Utils.Extensions
 {
     internal static class StringExtensions
     {
@@ -21,8 +21,9 @@ namespace Instasharp.Internal.Extensions
         {
             var indexOf = source.IndexOf(start);
             var startIndex = indexOf + start.Length;
+            var length = source.IndexOf(end, startIndex) - startIndex;
 
-            return indexOf is -1 ? null : source[startIndex..source.IndexOf(end, startIndex)];
+            return indexOf is -1 ? null : source.Substring(startIndex, length);
         }
     }
 }

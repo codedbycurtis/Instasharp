@@ -1,14 +1,15 @@
 ﻿using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using Instasharp.Profiles;
-using Instasharp.Internal.Extensions;
+using Instasharp.Utils.Extensions;
 using Instasharp.Exceptions;
 using Instasharp.Search;
+using Instasharp.Utils;
 
 namespace Instasharp
 {
@@ -17,15 +18,28 @@ namespace Instasharp
     /// </summary>
     public class InstagramClient
     {
-        private readonly HttpClient _httpClient = new();
+        private readonly HtmlScraper _htmlScraper;
+        private readonly HttpClient _httpClient;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="InstagramClient"/> with an optional <paramref name="sessionId"/>.
+        /// Initializes a new instance of the <see cref="InstagramClient"/> class with an optional <paramref name="sessionId"/>.
         /// </summary>
         /// <param name="sessionId">A valid SessionID may be required to stop Instagram re-directing requests to the login page.</param>
-        public InstagramClient(string? sessionId = default)
+        public InstagramClient(string? sessionId = default) : this(Http.Client, sessionId) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InstagramClient"/> class with the specified <paramref name="httpClient"/> and an optional <paramref name="sessionId"/>.
+        /// </summary>
+        /// <param name="httpClient">The <see cref="HttpClient"/> to use for requests.</param>
+        /// <param name="sessionId">A valid SessionID may be required to stop Instagram re-directing requests to the login page.</param>
+        public InstagramClient(HttpClient httpClient, string? sessionId = default)
         {
-            _httpClient.DefaultRequestHeaders.Add("cookie", $"sessionid={sessionId}");
+            this._httpClient = httpClient;
+            if (sessionId is not null)
+            {
+                this._httpClient.DefaultRequestHeaders.Add("cookie", $"sessionid={sessionId}");
+            }
+            this._htmlScraper = new(this._httpClient);
         }
 
         /// <summary>
@@ -36,22 +50,15 @@ namespace Instasharp
         /// <returns>A <see cref="Profile"/> object representing the acquired metadata.</returns>
         public async Task<Profile> GetProfileMetadataAsync(string usernameOrUrl)
         {
-            // Declare contextual variables
-            HttpResponseMessage response;
+            var uri = usernameOrUrl;
 
             // Check if the user has entered a complete URL or a username
-            if (usernameOrUrl.StartsWith(StringComparison.OrdinalIgnoreCase, "https://www.instagram.com/", "http://www.instagram.com/"))
+            if (!usernameOrUrl.StartsWith(StringComparison.OrdinalIgnoreCase, "https://www.instagram.com/", "http://www.instagram.com/"))
             {
-                response = await _httpClient.GetAsync(usernameOrUrl);
-            }
-            else
-            {
-                response = await _httpClient.GetAsync($"https://www.instagram.com/{usernameOrUrl}/");
+                uri = $"https://www.instagram.com/{usernameOrUrl}";
             }
 
-            var html = await response.Content.ReadAsStringAsync();
-
-            response.Dispose();            
+            var html = await this._htmlScraper.GetPageSource(uri);
 
             // Splits the content between the specified tags into a substring - which is the JSON data we need
             // (Most of this JSON data is useless, so there may be room for optimization here to decrease parsing time)
@@ -63,51 +70,21 @@ namespace Instasharp
                 throw ContentUnavailableException.PageUnavailable(usernameOrUrl);
             }
 
-            var jObject = JObject.Parse(json);
-
-#nullable disable
+            var payload = JObject.Parse(json);
 
             // If a 'LoginAndSignupPage' token exists, Instagram has re-directed our request, so an exception is thrown
-            if (jObject["entry_data"]["LoginAndSignupPage"] is not null)
+            if (payload["entry_data"]!["LoginAndSignupPage"] is not null)
             {
                 throw ClientUnauthorizedException.InvalidSessionId();
             }
 
             // If a 'ProfilePage' token cannot be found, the username is invalid, so an exception is thrown
-            if (jObject["entry_data"]["ProfilePage"] is null)
+            if (payload["entry_data"]!["ProfilePage"] is null)
             {
                 throw ProfileNotFoundException.InvalidUsernameOrUrl(usernameOrUrl);
             }
 
-            var parsedProfile = jObject["entry_data"]["ProfilePage"][0]["graphql"]["user"];
-            var profilePictureUri = parsedProfile["profile_pic_url_hd"].ToString();
-            var handle = parsedProfile["username"].ToString();
-            var isVerified = parsedProfile["is_verified"].ToObject<bool>();
-            var fullName = parsedProfile["full_name"].ToString();
-            var postCount = parsedProfile["edge_owner_to_timeline_media"]["count"].ToObject<double>();
-            var followerCount = parsedProfile["edge_followed_by"]["count"].ToObject<double>();
-            var followingCount = parsedProfile["edge_follow"]["count"].ToObject<double>();
-            var isBusinessAccount = parsedProfile["is_business_account"].ToObject<bool>();
-            var businessCategoryName = parsedProfile["category_name"].ToString();
-            var bio = parsedProfile["biography"].ToString();
-            var website = parsedProfile["external_url"].ToString();
-            var isPrivate = parsedProfile["is_private"].ToObject<bool>();
-
-#nullable restore
-
-            return new Profile(
-                profilePictureUri,
-                handle,
-                isVerified,
-                postCount,
-                followerCount,
-                followingCount,
-                fullName,
-                isBusinessAccount,
-                businessCategoryName,
-                bio,
-                website,
-                isPrivate);
+            return Json.ParseInstagramProfilePayload(payload);
         }
 
         /// <summary>
@@ -118,7 +95,7 @@ namespace Instasharp
         public async Task DownloadProfilePictureAsync(Profile profile, string path)
         {
             using var response = await this._httpClient.GetAsync(profile.ProfilePictureUri);
-            using var stream = new FileStream(path, FileMode.Create);
+            using var stream = File.Create(path);
             await response.Content.CopyToAsync(stream);
         }
 
@@ -130,10 +107,12 @@ namespace Instasharp
         public async Task DownloadProfilePictureAsync(string usernameOrUrl, string path)
         {
             var profile = await this.GetProfileMetadataAsync(usernameOrUrl);
-            using var profilePictureResponse = await _httpClient.GetAsync(profile.ProfilePictureUri);
-            using var stream = new FileStream(path, FileMode.Create);
+            using var profilePictureResponse = await this._httpClient.GetAsync(profile.ProfilePictureUri);
+            using var stream = File.Create(path);
             await profilePictureResponse.Content.CopyToAsync(stream);
         }
+
+#nullable disable
 
         /// <summary>
         /// Enumerates over Instagram profiles matching the specified <paramref name="searchQuery"/>.
@@ -141,30 +120,16 @@ namespace Instasharp
         /// <param name="searchQuery">The profile to search for.</param>
         public async IAsyncEnumerable<ProfileSearchResult> SearchForProfilesAsync(string searchQuery)
         {
-            using var response = await this._httpClient.GetAsync($"https://www.instagram.com/web/search/topsearch/?query={searchQuery}/");
-            var json = await response.Content.ReadAsStringAsync();
-            var jObject = JObject.Parse(json);
+            var json = await this._htmlScraper.GetPageSource($"https://www.instagram.com/web/search/topsearch/?query={searchQuery}/");
+            var payload = JObject.Parse(json);
 
-#nullable disable
-
-            for (int i = 0; i < jObject["users"].Count(); ++i)
+            for (int i = 0; i < payload["users"].Count(); ++i)
             {
-                var profilePictureUri = jObject["users"][i]["user"]["profile_pic_url"].ToString();
-                var handle = jObject["users"][i]["user"]["username"].ToString();
-                var isVerified = jObject["users"][i]["user"]["is_verified"].ToObject<bool>();
-                var fullName = jObject["users"][i]["user"]["full_name"].ToString();
-                var isPrivate = jObject["users"][i]["user"]["is_private"].ToObject<bool>();
-
-                yield return new ProfileSearchResult(
-                    profilePictureUri,
-                    handle,
-                    isVerified,
-                    fullName,
-                    isPrivate);
+                yield return Json.ParseInstagramProfileSearchResultPayload(payload["users"][i]);
             }
+        }
 
 #nullable restore
 
-        }
     }
 }

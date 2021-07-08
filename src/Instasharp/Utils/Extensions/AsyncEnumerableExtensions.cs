@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace Instasharp.Internal.Extensions
+namespace Instasharp.Utils.Extensions
 {
     internal static class AsyncEnumerableExtensions
     {
-        internal static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> source)
+        internal static async ValueTask<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> source)
         {
             var collection = new List<T>();
 
@@ -17,21 +17,17 @@ namespace Instasharp.Internal.Extensions
             return collection;
         }
 
-        internal static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> source, int count)
+        internal static async ValueTask<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> source, int count)
         {
             var collection = new List<T>();
 
             await foreach (var item in source)
             {
-                if (collection.Count != count)
+                if (collection.Count == count)
                 {
-                    collection.Add(item);
+                    break;                    
                 }
-
-                else
-                {
-                    break;
-                }
+                collection.Add(item);
             }
 
             return collection;

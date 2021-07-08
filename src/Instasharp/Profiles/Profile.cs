@@ -1,4 +1,6 @@
-﻿namespace Instasharp.Profiles
+﻿using System;
+
+namespace Instasharp.Profiles
 {
     /// <summary>
     /// Publicly-available metadata of an Instagram profile.
