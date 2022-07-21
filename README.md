@@ -20,14 +20,10 @@ Instasharp can:
 
 ## Usage
 ### Supported Runtimes
-- .NET Core 5.0
+- .NET 6.0
 - .NET Core 3.1
-- .NET Framework >= 4.6.1
+- .NET Framework 4.8
 - .NET Standard >= 2.0
-
-### Dependencies
-- [Json.NET](https://github.com/JamesNK/Newtonsoft.Json)
-- (Depending on the target framework, other dependencies may be required.)
 
 ### Examples
 #### Obtaining a specific profile's metadata
